@@ -23,6 +23,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; }
 .header h1 { font-size: 22px; font-weight: 600; }
 .header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.stat-card.d .value { color: #bbb; }
+.grade-D { background: #bbb; }
 .stats-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
 .stat-card { background: white; border-radius: 10px; padding: 16px; min-width: 100px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
 .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
@@ -68,7 +70,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 <body>
 <div class="header">
   <h1>🔥 爆款选题看板</h1>
-  <div class="subtitle">S级=黄色底色最新月选题(30条) ｜ A级=5万+阅读 ｜ B级=1-5万阅读</div>
+  <div class="subtitle">S级=黄色底色最新月选题(30条) ｜ A级=10万+ ｜ B级=5-10万 ｜ C级=1-5万 ｜ D级=1万以下</div>
 </div>
 <div class="stats-bar" id="statsBar"></div>
 <div class="charts-grid">
@@ -101,9 +103,10 @@ function renderStats() {
   var html = "";
   html += '<div class="stat-card total" data-filter="grade" data-value=""><div class="label">总选题</div><div class="value">' + (tg.total || DATA.topics.length) + '</div></div>';
   html += '<div class="stat-card s" data-filter="grade" data-value="S"><div class="label">S级 (黄色)</div><div class="value">' + (tg.S || 0) + '</div></div>';
-  html += '<div class="stat-card a" data-filter="grade" data-value="A"><div class="label">A级 (5万+)</div><div class="value">' + (tg.A || 0) + '</div></div>';
-  html += '<div class="stat-card b" data-filter="grade" data-value="B"><div class="label">B级 (1-5万)</div><div class="value">' + (tg.B || 0) + '</div></div>';
-  html += '<div class="stat-card c" data-filter="grade" data-value="C"><div class="label">C级 (1万以下)</div><div class="value">' + (tg.C || 0) + '</div></div>';
+  html += '<div class="stat-card a" data-filter="grade" data-value="A"><div class="label">A级 (10万+)</div><div class="value">' + (tg.A || 0) + '</div></div>';
+  html += '<div class="stat-card b" data-filter="grade" data-value="B"><div class="label">B级 (5-10万)</div><div class="value">' + (tg.B || 0) + '</div></div>';
+  html += '<div class="stat-card c" data-filter="grade" data-value="C"><div class="label">C级 (1-5万)</div><div class="value">' + (tg.C || 0) + '</div></div>';
+  html += '<div class="stat-card d" data-filter="grade" data-value="D"><div class="label">D级 (1万以下)</div><div class="value">' + (tg.D || 0) + '</div></div>';
   bar.innerHTML = html;
   bar.addEventListener("click", function(e) {
     var card = e.target.closest(".stat-card");
@@ -132,9 +135,9 @@ function drawDoughnut(tg) {
   var cy = h / 2 - 20;
   var radius = Math.min(w, h) / 2 - 40;
   var inner = radius * 0.6;
-  var values = [tg.S||0, tg.A||0, tg.B||0, tg.C||0];
-  var colors = ["#ff6b6b", "#fa8c16", "#1890ff", "#52c41a"];
-  var labels = ["S级(黄色)", "A级(5万+)", "B级(1-5万)", "C级(1万-)"];
+  var values = [tg.S||0, tg.A||0, tg.B||0, tg.C||0, tg.D||0];
+  var colors = ["#ff6b6b", "#fa8c16", "#1890ff", "#52c41a", "#bbb"];
+  var labels = ["S级(黄色)", "A级(10万+)", "B级(5-10万)", "C级(1-5万)", "D级(1万-)"];
   var total = values.reduce(function(a,b){return a+b}, 0);
   if (total === 0) return;
   var startAngle = -Math.PI / 2;
@@ -175,8 +178,8 @@ function drawReadChart() {
   var ranges = [
     { label: "10万+", min: 100000, max: Infinity, color: "#ff6b6b" },
     { label: "5-10万", min: 50000, max: 100000, color: "#ffa940" },
-    { label: "2-5万", min: 20000, max: 50000, color: "#69c0ff" },
-    { label: "1-2万", min: 10000, max: 20000, color: "#95de64" },
+    { label: "1-5万", min: 10000, max: 50000, color: "#69c0ff" },
+    { label: "1万以下", min: 0, max: 10000, color: "#d9d9d9" },
   ];
   var counts = ranges.map(function(r) {
     return { label: r.label, count: topics.filter(function(t){return t.阅读量数值>=r.min && t.阅读量数值<r.max}).length, color: r.color };
@@ -207,7 +210,7 @@ function drawReadChart() {
 function renderFilters() {
   var fb = document.getElementById("filterBar");
   fb.innerHTML = '<input type="text" id="searchInput" placeholder="🔍 搜索选题关键词...">';
-  fb.innerHTML += '<select id="gradeFilter"><option value="">全部等级</option><option value="S">S级(黄色)</option><option value="A">A级</option><option value="B">B级</option><option value="C">C级</option></select>';
+  fb.innerHTML += '<select id="gradeFilter"><option value="">全部等级</option><option value="S">S级(黄色)</option><option value="A">A级</option><option value="B">B级</option><option value="C">C级</option><option value="D">D级</option></select>';
   fb.innerHTML += '<span class="reset-btn" id="resetBtn" style="display:none">✕ 清除筛选</span>';
   document.getElementById("searchInput").addEventListener("input", function() { currentPage=1; applyFilters(); });
   document.getElementById("gradeFilter").addEventListener("change", function() { currentPage=1; applyFilters(); });
